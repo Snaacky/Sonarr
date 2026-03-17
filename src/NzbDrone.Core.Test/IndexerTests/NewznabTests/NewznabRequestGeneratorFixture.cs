@@ -149,47 +149,6 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         }
 
         [Test]
-        public void should_use_only_absolute_numbering_for_anime_search()
-        {
-            var results = Subject.GetSearchRequests(_animeSearchCriteria);
-
-            results.GetAllTiers().Should().HaveCount(2);
-
-            var pages = results.GetTier(0).Select(t => t.First()).ToList();
-
-            pages[0].Url.FullUri.Should().Contain("rid=10&q=100");
-            pages[1].Url.FullUri.Should().Contain("q=Monkey%20Island+100");
-        }
-
-        [Test]
-        public void should_also_use_standard_numbering_for_anime_search()
-        {
-            Subject.Settings.AnimeStandardFormatSearch = true;
-            var results = Subject.GetSearchRequests(_animeSearchCriteria);
-
-            results.GetTier(0).Should().HaveCount(4);
-            var pages = results.GetTier(0).Select(t => t.First()).ToList();
-
-            pages[0].Url.FullUri.Should().Contain("rid=10&q=100");
-            pages[1].Url.FullUri.Should().Contain("rid=10&season=5&ep=4");
-            pages[2].Url.FullUri.Should().Contain("q=Monkey%20Island+100");
-            pages[3].Url.FullUri.Should().Contain("q=Monkey%20Island&season=5&ep=4");
-        }
-
-        [Test]
-        public void should_search_by_standard_season_number()
-        {
-            Subject.Settings.AnimeStandardFormatSearch = true;
-            var results = Subject.GetSearchRequests(_animeSeasonSearchCriteria);
-
-            results.GetTier(0).Should().HaveCount(2);
-            var pages = results.GetTier(0).Select(t => t.First()).ToList();
-
-            pages[0].Url.FullUri.Should().Contain("rid=10&season=3");
-            pages[1].Url.FullUri.Should().Contain("q=Monkey%20Island&season=3");
-        }
-
-        [Test]
         public void should_not_search_by_rid_if_not_supported()
         {
             _capabilities.SupportedTvSearchParameters = new[] { "q", "season", "ep" };

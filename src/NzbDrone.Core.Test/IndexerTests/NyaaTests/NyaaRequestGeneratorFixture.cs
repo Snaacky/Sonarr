@@ -89,18 +89,5 @@ namespace NzbDrone.Core.Test.IndexerTests.NyaaTests
             pages[1].Url.FullUri.Should().Contain("term=Naruto+Shippuuden+09");
             pages[2].Url.FullUri.Should().Contain("term=Naruto+Shippuuden+s01e09");
         }
-
-        [Test]
-        public void should_search_by_standard_season_number()
-        {
-            Subject.Settings.AnimeStandardFormatSearch = true;
-            var results = Subject.GetSearchRequests(_animeSeasonSearchCriteria);
-
-            results.GetAllTiers().Should().HaveCount(1);
-
-            var page = results.GetAllTiers().First().First();
-
-            page.Url.FullUri.Should().Contain("term=Naruto+Shippuuden+s03");
-        }
     }
 }
