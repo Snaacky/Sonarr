@@ -27,10 +27,8 @@ jobs:
   package:
     strategy:
       matrix:
-        platform: [freebsd, linux, macos, windows]
+        platform: [linux, macos, windows]
         include:
-          - platform: freebsd
-            os: ubuntu-latest
           - platform: linux
             os: ubuntu-latest
           - platform: macos
@@ -146,8 +144,6 @@ jobs:
         
         hashes="$hashes, $(addHash "win-x64-installer.exe" "windows" "x64" "installer")"
         hashes="$hashes, $(addHash "win-x86-installer.exe" "windows" "x86" "installer")"
-        
-        hashes="$hashes, $(addHash "freebsd-x64.tar.gz" "freebsd" "x64" "archive")"
         
         hashes="$hashes ]"
         

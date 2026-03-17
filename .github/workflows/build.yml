@@ -54,13 +54,9 @@ jobs:
           echo "major_version=${{ env.SONARR_MAJOR_VERSION }}" >> "$GITHUB_OUTPUT"
           echo "version=$SONARR_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Enable Extra Platforms In SDK
-        shell: bash
-        run: ./build.sh --enable-extra-platforms-in-sdk
-
       - name: Build Backend
         shell: bash
-        run: ./build.sh --backend --enable-extra-platforms --packages
+        run: ./build.sh --backend --packages
 
       # Test Artifacts
 
@@ -84,11 +80,6 @@ jobs:
 
       # Build Artifacts (grouped by OS)
 
-      - name: Publish FreeBSD Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build_freebsd
-          path: _artifacts/freebsd-*/**/*
       - name: Publish Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -225,33 +216,3 @@ jobs:
       branch: ${{ github.ref_name }}
       major_version: ${{ needs.backend.outputs.major_version }}
       version: ${{ needs.backend.outputs.version }}
-
-  notify:
-    name: Discord Notification
-    needs:
-      [
-        backend,
-        frontend,
-        unit_test,
-        unit_test_postgres,
-        integration_test,
-        deploy,
-      ]
-    if: ${{ !cancelled() && (github.ref_name == 'develop' || github.ref_name == 'main') }}
-    env:
-      STATUS: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Notify
-        uses: tsickert/discord-webhook@v6.0.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          username: "GitHub Actions"
-          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          embed-title: "${{ github.workflow }}: ${{ env.STATUS == 'success' && 'Success' || 'Failure' }}"
-          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          embed-description: |
-            **Branch** ${{ github.ref }}
-            **Build** ${{ needs.backend.outputs.version }}
-          embed-color: ${{ env.STATUS == 'success' && '3066993' || '15158332' }}
