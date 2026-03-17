@@ -409,9 +409,14 @@ namespace NzbDrone.Core.Indexers.Newznab
                     searchCriteria,
                     $"&q={searchCriteria.AbsoluteEpisodeNumber:00}");
 
+                var includeAnimeStandardFormatQuery = searchCriteria.SeasonNumber > 0 &&
+                                                      searchCriteria.EpisodeNumber > 0;
                 var includeAnimeStandardFormatSearch = Settings.AnimeStandardFormatSearch &&
-                                                       searchCriteria.SeasonNumber > 0 &&
-                                                       searchCriteria.EpisodeNumber > 0;
+                                                       includeAnimeStandardFormatQuery;
+                var animeStandardFormatQueryTitle = includeAnimeStandardFormatQuery
+                    ? GetAnimeStandardFormatQueryTitle(searchCriteria)
+                    : null;
+                var animeAbsoluteQueryTitles = GetAnimeAbsoluteQueryTitles(searchCriteria);
 
                 if (includeAnimeStandardFormatSearch && SupportsEpisodeSearch)
                 {
@@ -421,15 +426,18 @@ namespace NzbDrone.Core.Indexers.Newznab
                         $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}&ep={searchCriteria.EpisodeNumber}");
                 }
 
-                var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
+                var queryTitles = GetDistinctAnimeQueryTitles(TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles);
 
-                foreach (var queryTitle in queryTitles)
+                foreach (var queryTitle in animeAbsoluteQueryTitles)
                 {
                     pageableRequests.Add(GetPagedRequests(MaxPages,
                         Settings.AnimeCategories,
                         "search",
                         $"&q={NewsnabifyTitle(queryTitle)}+{searchCriteria.AbsoluteEpisodeNumber:00}"));
+                }
 
+                foreach (var queryTitle in queryTitles)
+                {
                     if (includeAnimeStandardFormatSearch && SupportsEpisodeSearch)
                     {
                         pageableRequests.Add(GetPagedRequests(MaxPages,
@@ -437,6 +445,14 @@ namespace NzbDrone.Core.Indexers.Newznab
                             "tvsearch",
                             $"&q={NewsnabifyTitle(queryTitle)}&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}&ep={searchCriteria.EpisodeNumber}"));
                     }
+                }
+
+                if (animeStandardFormatQueryTitle.IsNotNullOrWhiteSpace())
+                {
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                        Settings.AnimeCategories,
+                        "search",
+                        $"&q={NewsnabifyTitle(animeStandardFormatQueryTitle)}+S{searchCriteria.SeasonNumber:00}E{searchCriteria.EpisodeNumber:00}"));
                 }
             }
 
@@ -447,21 +463,16 @@ namespace NzbDrone.Core.Indexers.Newznab
         {
             var pageableRequests = new IndexerPageableRequestChain();
 
-            if (SupportsSearch && Settings.AnimeStandardFormatSearch && searchCriteria.SeasonNumber > 0)
+            if (SupportsSearch)
             {
-                AddTvIdPageableRequests(pageableRequests,
-                    Settings.AnimeCategories,
-                    searchCriteria,
-                    $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}");
-
-                var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
+                var queryTitles = GetDistinctAnimeQueryTitles(TextSearchEngine == "raw" ? searchCriteria.QueryTitles : searchCriteria.CleanQueryTitles);
 
                 foreach (var queryTitle in queryTitles)
                 {
                     pageableRequests.Add(GetPagedRequests(MaxPages,
                         Settings.AnimeCategories,
-                        "tvsearch",
-                        $"&q={NewsnabifyTitle(queryTitle)}&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}"));
+                        "search",
+                        $"&q={NewsnabifyTitle(queryTitle)}"));
                 }
             }
 
@@ -627,6 +638,54 @@ namespace NzbDrone.Core.Indexers.Newznab
         {
             title = title.Replace("+", " ");
             return Uri.EscapeDataString(title);
+        }
+
+        private string GetAnimeStandardFormatQueryTitle(AnimeEpisodeSearchCriteria searchCriteria)
+        {
+            var title = searchCriteria.Series?.Title;
+
+            if (title.IsNullOrWhiteSpace())
+            {
+                title = searchCriteria.SceneTitles?.FirstOrDefault();
+            }
+
+            if (title.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            return TextSearchEngine == "raw"
+                ? title
+                : SearchCriteriaBase.GetCleanSceneTitle(title);
+        }
+
+        private List<string> GetAnimeAbsoluteQueryTitles(AnimeEpisodeSearchCriteria searchCriteria)
+        {
+            var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
+
+            if (searchCriteria.SeasonNumber <= 1)
+            {
+                return GetDistinctAnimeQueryTitles(queryTitles);
+            }
+
+            var baseSeriesTitle = GetAnimeStandardFormatQueryTitle(searchCriteria);
+
+            if (baseSeriesTitle.IsNullOrWhiteSpace())
+            {
+                return GetDistinctAnimeQueryTitles(queryTitles);
+            }
+
+            return GetDistinctAnimeQueryTitles(queryTitles
+                .Where(title => !title.Equals(baseSeriesTitle, StringComparison.InvariantCultureIgnoreCase))
+                .ToList());
+        }
+
+        private static List<string> GetDistinctAnimeQueryTitles(IEnumerable<string> queryTitles)
+        {
+            return queryTitles
+                .GroupBy(NewsnabifyTitle, StringComparer.InvariantCultureIgnoreCase)
+                .Select(group => group.First())
+                .ToList();
         }
 
         // Temporary workaround for NNTMux considering season=0 -> null. '00' should work on existing newznab indexers.

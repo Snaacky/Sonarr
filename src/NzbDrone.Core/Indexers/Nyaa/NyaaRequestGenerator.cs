@@ -87,12 +87,9 @@ namespace NzbDrone.Core.Indexers.Nyaa
         {
             var pageableRequests = new IndexerPageableRequestChain();
 
-            foreach (var searchTitle in searchCriteria.SceneTitles.Select(PrepareQuery))
+            foreach (var searchTitle in searchCriteria.QueryTitles.Select(PrepareQuery))
             {
-                if (Settings.AnimeStandardFormatSearch && searchCriteria.SeasonNumber > 0)
-                {
-                    pageableRequests.Add(GetPagedRequests($"{searchTitle}+s{searchCriteria.SeasonNumber:00}"));
-                }
+                pageableRequests.Add(GetPagedRequests(searchTitle));
             }
 
             return pageableRequests;

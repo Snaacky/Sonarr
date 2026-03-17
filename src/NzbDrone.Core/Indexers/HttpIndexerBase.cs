@@ -30,7 +30,20 @@ namespace NzbDrone.Core.Indexers
         public bool SupportsPaging => PageSize > 0;
 
         public virtual int PageSize => 0;
-        public virtual TimeSpan RateLimit => TimeSpan.FromSeconds(2);
+        public virtual TimeSpan RateLimit
+        {
+            get
+            {
+                var rateLimitSettings = Definition?.Settings as IRateLimitIndexerSettings;
+
+                if (rateLimitSettings != null)
+                {
+                    return TimeSpan.FromSeconds(Math.Max(0, rateLimitSettings.RateLimit));
+                }
+
+                return TimeSpan.FromSeconds(IndexerDefaults.RATE_LIMIT);
+            }
+        }
 
         public abstract IIndexerRequestGenerator GetRequestGenerator();
         public abstract IParseIndexerResponse GetParser();

@@ -49,7 +49,7 @@ namespace NzbDrone.Core.Indexers.Newznab
         }
     }
 
-    public class NewznabSettings : PropertywiseEquatable<NewznabSettings>, IIndexerSettings
+    public class NewznabSettings : PropertywiseEquatable<NewznabSettings>, IIndexerSettings, IDisableIndividualEpisodeSearchSettings, IRateLimitIndexerSettings
     {
         private static readonly NewznabSettingsValidator Validator = new ();
 
@@ -60,6 +60,7 @@ namespace NzbDrone.Core.Indexers.Newznab
             AnimeCategories = Enumerable.Empty<int>();
             MultiLanguages = Array.Empty<int>();
             FailDownloads = Array.Empty<int>();
+            RateLimit = IndexerDefaults.RATE_LIMIT;
         }
 
         [FieldDefinition(0, Label = "URL")]
@@ -90,7 +91,13 @@ namespace NzbDrone.Core.Indexers.Newznab
         [FieldDefinition(8, Type = FieldType.Select, SelectOptions = typeof(FailDownloads), Label = "IndexerSettingsFailDownloads", HelpText = "IndexerSettingsFailDownloadsHelpText", Advanced = true)]
         public IEnumerable<int> FailDownloads { get; set; }
 
-        // Field 8 is used by TorznabSettings MinimumSeeders
+        [FieldDefinition(9, Type = FieldType.Checkbox, Label = "IndexerSettingsDisableIndividualEpisodes", HelpText = "IndexerSettingsDisableIndividualEpisodesHelpText", Advanced = true)]
+        public bool DisableIndividualEpisodes { get; set; }
+
+        [FieldDefinition(10, Type = FieldType.Number, Label = "IndexerSettingsRateLimit", HelpText = "IndexerSettingsRateLimitHelpText", Unit = "seconds", Advanced = true)]
+        public double RateLimit { get; set; }
+
+        // Field 11 is used by TorznabSettings MinimumSeeders
         // If you need to add another field here, update TorznabSettings as well and this comment
 
         public virtual NzbDroneValidationResult Validate()

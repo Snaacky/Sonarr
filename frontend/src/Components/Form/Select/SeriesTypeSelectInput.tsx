@@ -39,9 +39,9 @@ const seriesTypeOptions: ISeriesTypeOption[] = [
   },
   {
     key: seriesTypes.ANIME,
-    value: 'Anime / Absolute',
+    value: 'Anime',
     get format() {
-      return translate('AnimeEpisodeTypeFormat', { format: '005' });
+      return 'Prioritize season packs';
     },
   },
 ];
