@@ -209,7 +209,6 @@ jobs:
   deploy:
     if: ${{ github.ref_name == 'develop' || github.ref_name == 'main' }}
     needs: [backend, frontend, unit_test, unit_test_postgres, integration_test]
-    secrets: inherit
     uses: ./.github/workflows/deploy.yml
     with:
       framework: ${{ needs.backend.outputs.framework }}
