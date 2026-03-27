@@ -53,6 +53,14 @@ class MediaManagementConnector extends Component {
   // Listeners
 
   onInputChange = ({ name, value }) => {
+    if (name === 'copyUsingHardlinks' && value) {
+      this.props.setMediaManagementSettingsValue({ name: 'copyUsingSoftlinks', value: false });
+    }
+
+    if (name === 'copyUsingSoftlinks' && value) {
+      this.props.setMediaManagementSettingsValue({ name: 'copyUsingHardlinks', value: false });
+    }
+
     this.props.setMediaManagementSettingsValue({ name, value });
   };
 

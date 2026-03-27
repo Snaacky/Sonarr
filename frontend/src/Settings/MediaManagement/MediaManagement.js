@@ -265,6 +265,23 @@ class MediaManagement extends Component {
                         isAdvanced={true}
                         size={sizes.MEDIUM}
                       >
+                        <FormLabel>{translate('UseSoftlinksInsteadOfCopy')}</FormLabel>
+
+                        <FormInputGroup
+                          type={inputTypes.CHECK}
+                          name="copyUsingSoftlinks"
+                          helpText={translate('CopyUsingSoftlinksSeriesHelpText')}
+                          helpTextWarning={translate('CopyUsingSoftlinksHelpTextWarning')}
+                          onChange={onInputChange}
+                          {...settings.copyUsingSoftlinks}
+                        />
+                      </FormGroup>
+
+                      <FormGroup
+                        advancedSettings={advancedSettings}
+                        isAdvanced={true}
+                        size={sizes.MEDIUM}
+                      >
                         <FormLabel>{translate('ImportUsingScript')}</FormLabel>
 
                         <FormInputGroup

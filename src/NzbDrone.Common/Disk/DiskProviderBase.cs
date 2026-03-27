@@ -307,6 +307,20 @@ namespace NzbDrone.Common.Disk
 
         public abstract bool TryCreateHardLink(string source, string destination);
 
+        public virtual bool TryCreateSymbolicLink(string source, string destination)
+        {
+            try
+            {
+                File.CreateSymbolicLink(destination, source);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex, "Symbolic link '{0}' to '{1}' failed.", source, destination);
+                return false;
+            }
+        }
+
         public virtual bool TryCreateRefLink(string source, string destination)
         {
             return false;

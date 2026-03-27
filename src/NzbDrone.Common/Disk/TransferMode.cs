@@ -10,6 +10,7 @@ namespace NzbDrone.Common.Disk
         Move = 1,
         Copy = 2,
         HardLink = 4,
+        SymbolicLink = 8,
 
         HardLinkOrCopy = Copy | HardLink
     }

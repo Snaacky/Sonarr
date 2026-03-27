@@ -34,6 +34,7 @@ namespace NzbDrone.Common.Disk
         void MoveFolder(string source, string destination);
         bool TryRenameFile(string source, string destination);
         bool TryCreateHardLink(string source, string destination);
+        bool TryCreateSymbolicLink(string source, string destination);
         bool TryCreateRefLink(string source, string destination);
         void DeleteFolder(string path, bool recursive);
         string ReadAllText(string filePath);

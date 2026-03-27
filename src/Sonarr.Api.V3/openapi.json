@@ -10112,6 +10112,9 @@
           "copyUsingHardlinks": {
             "type": "boolean"
           },
+          "copyUsingSoftlinks": {
+            "type": "boolean"
+          },
           "useScriptImport": {
             "type": "boolean"
           },

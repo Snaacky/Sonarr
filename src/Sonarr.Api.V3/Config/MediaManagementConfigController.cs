@@ -21,6 +21,14 @@ namespace Sonarr.Api.V3.Config
                                            RootFolderValidator rootFolderValidator)
             : base(configService)
         {
+            SharedValidator.RuleFor(c => c).Custom((config, context) =>
+            {
+                if (config.CopyUsingHardlinks && config.CopyUsingSoftlinks)
+                {
+                    context.AddFailure(nameof(MediaManagementConfigResource.CopyUsingHardlinks), "Only one link mode can be enabled at a time");
+                    context.AddFailure(nameof(MediaManagementConfigResource.CopyUsingSoftlinks), "Only one link mode can be enabled at a time");
+                }
+            });
             SharedValidator.RuleFor(c => c.RecycleBinCleanupDays).GreaterThanOrEqualTo(0);
             SharedValidator.RuleFor(c => c.ChmodFolder).SetValidator(folderChmodValidator).When(c => !string.IsNullOrEmpty(c.ChmodFolder) && (OsInfo.IsLinux || OsInfo.IsOsx));
 
