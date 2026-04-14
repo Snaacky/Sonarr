@@ -45,6 +45,13 @@ RUN case "${TARGETARCH}" in \
 # add local files
 COPY root/ /
 
+# set executable bit
+RUN chmod +x \
+    /etc/s6-overlay/s6-rc.d/init-sonarr-config/run \
+    /etc/s6-overlay/s6-rc.d/init-sonarr-config/up \
+    /etc/s6-overlay/s6-rc.d/svc-sonarr/run \
+    /etc/s6-overlay/s6-rc.d/svc-sonarr/data/check
+
 # ports and volumes
 EXPOSE 8989
 
