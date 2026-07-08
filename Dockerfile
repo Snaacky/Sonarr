@@ -48,7 +48,6 @@ COPY root/ /
 # set executable bit
 RUN chmod +x \
     /app/sonarr/bin/Sonarr \
-    /app/sonarr/bin/Sonarr.Update \
     /app/sonarr/bin/ffprobe \
     /etc/s6-overlay/s6-rc.d/init-sonarr-config/run \
     /etc/s6-overlay/s6-rc.d/init-sonarr-config/up \
